@@ -1,1 +1,1 @@
-web: $HOME/.chromedriver/bin/chromedriver --port=$PORT
+web: node app/server.js
