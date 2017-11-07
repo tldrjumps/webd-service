@@ -44,7 +44,8 @@ options.addArguments(
     'headless',
     // Use --disable-gpu to avoid an error from a missing Mesa library, as per
     // https://chromium.googlesource.com/chromium/src/+/lkgr/headless/README.md
-    'disable-gpu',
+    //'disable-gpu',
+    'disable-infobars', 'no-sandbox', 'allow-insecure-localhost',
     'window-size=1280,720',
     '--user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36"'
     //enable multiple file download args?
