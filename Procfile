@@ -1,1 +1,1 @@
-web: node app/server.js
+web: $HOME/.chromedriver/bin/chromedriver --url-base wd/hub --port=$PORT
