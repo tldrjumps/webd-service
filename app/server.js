@@ -79,18 +79,6 @@ var options = {
         }
     };
 
-// create the proxy (without context)
-var exampleProxy = proxy(options);
-
-// mount `exampleProxy` in web server
-var app = express();
-    app.get('/ownedApps', function (req, res) {
-      console.log("reach")
-      res.send("reach")
-    })
-    app.use('/', [middleware.requireAuthentication,middleware.logger], exampleProxy);
-
-    app.listen(LISTEN_PORT);
 
 
 var middleware = {
@@ -143,3 +131,18 @@ var middleware = {
      next();
   }
 }
+
+
+// create the proxy (without context)
+var exampleProxy = proxy(options);
+
+// mount `exampleProxy` in web server
+var app = express();
+    app.get('/ownedApps', function (req, res) {
+      console.log("reach")
+      res.send("reach")
+    })
+    app.use('/', [middleware.requireAuthentication,middleware.logger], exampleProxy);
+
+    app.listen(LISTEN_PORT);
+
