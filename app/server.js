@@ -72,7 +72,7 @@ var options = {
             //'dev.localhost:3000' : 'http://localhost:8000'
         },
         onProxyReq:  function(proxyReq, req, res) {
-          console.log((req.headers.authorization)
+          console.log(req.headers.authorization)
           if(req.headers.authorization != undefined){
             var auth = new Buffer(req.headers.authorization.split(' ')[1], 'base64');
 
