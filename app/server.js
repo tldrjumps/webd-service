@@ -88,7 +88,7 @@ var middleware = {
       if(req.headers.authorization != undefined){
         console.log("Authorized")
         //var auth = new Buffer(req.headers.authorization.split(' ')[1], 'base64');
-
+        var auth = req.headers['authorization'];
         //proxyReq.removeHeader("authorization")
         //proxy.web(req, res);
         var tmp = auth.split(' ');   // Split on a space, the original auth looks like  "Basic Y2hhcmxlczoxMjM0NQ==" and we need the 2nd part
