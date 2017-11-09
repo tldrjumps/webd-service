@@ -94,7 +94,9 @@ var options = {
               //res.statusCode = 401; // Force them to retry authentication
               //res.setHeader('WWW-Authenticate', 'Basic realm="Secure Area"');
               //res.statusCode = 403;   // or alternatively just reject them altogether with a 403 Forbidden
-              res.send('<html><body>You shall not pass</body></html>');
+              res.setHeader("Content-Type", "text/html");
+              res.write("<p>Hello World</p>");
+              res.end();
           }
 
 
