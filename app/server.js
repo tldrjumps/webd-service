@@ -133,6 +133,9 @@ var middleware = {
 }
 
 
+setTimeout(function(){
+
+
 // create the proxy (without context)
 var exampleProxy = proxy(options);
 
@@ -146,3 +149,5 @@ var app = express();
 
     app.listen(LISTEN_PORT);
 
+
+}, 10000);
