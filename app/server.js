@@ -1,38 +1,21 @@
 
 const chromedriver = require('chromedriver');
 
-var http = require('http'),
-    httpProxy = require('http-proxy');
-var proxy = new httpProxy.createProxyServer({
-  target: {
-    host: 'localhost',
-    port: 9015
-  }
-});
-var proxyServer = http.createServer(function (req, res) {
-  proxy.web(req, res);
-});
+var http = require('http');
+// include dependencies
+var express = require('express');
+var proxy = require('http-proxy-middleware');
 
-//
-// Listen to the `upgrade` event and proxy the
-// WebSocket requests as well.
-//
-proxyServer.on('upgrade', function (req, socket, head) {
-  proxy.ws(req, socket, head);
-});
+const LOCAL_PORT = 9015;
+const LISTEN_PORT = process.env.PORT;
 
-proxyServer.listen(process.env.PORT);
-
-
-
-const port = 9015;
 const args = [
   '--url-base=wd/hub',
-  `--port=${port}`
+  `--port=${LOCAL_PORT}`
 ];
 chromedriver.start(args);
-console.log(port)
-var webdriver_server = 'http://localhost:' + port + '/wd/hub', // chromedriver.exe serves at this port
+console.log(LOCAL_PORT)
+var webdriver_server = 'http://localhost:' + LOCAL_PORT + '/wd/hub', // chromedriver.exe serves at this port
 chrome = require('selenium-webdriver/chrome'),
 options = new chrome.Options(),
 webdriver = require( 'selenium-webdriver'),
@@ -71,3 +54,42 @@ if( 'undefined' != typeof saved_session_id && saved_session_id!= ""){
 // set the window inner size to 800 x 600
 
 browser.get('http://www.google.com');
+
+
+
+// proxy middleware options
+var options = {
+        target: 'http://localhost:' + LOCAL_PORT, // target host
+        changeOrigin: true,               // needed for virtual hosted sites
+        ws: true,                         // proxy websockets
+        pathRewrite: {
+            '^/api/old-path' : '/api/new-path',     // rewrite path
+            '^/api/remove/path' : '/path'           // remove base path
+        },
+        router: {
+            // when request.headers.host == 'dev.localhost:3000',
+            // override target 'http://www.example.org' to 'http://localhost:8000'
+            //'dev.localhost:3000' : 'http://localhost:8000'
+        },
+        onProxyReq:  function(proxyReq, req, res) {
+          if(req.headers.authorization != undefined){
+            var auth = new Buffer(req.headers.authorization.split(' ')[1], 'base64');
+            console.log(auth)
+            proxyReq.removeHeader("authorization")
+            //proxy.web(req, res);
+            }
+        }
+    };
+
+// create the proxy (without context)
+var exampleProxy = proxy(options);
+
+// mount `exampleProxy` in web server
+var app = express();
+    app.get('/ownedApps', function (req, res) {
+      console.log("reach")
+      res.send("reach")
+    })
+    app.use('/', exampleProxy);
+
+    app.listen(LISTEN_PORT);
