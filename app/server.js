@@ -87,7 +87,7 @@ var middleware = {
       console.log("Autorization" + req.headers.authorization)
       if(req.headers.authorization != undefined){
         console.log("Authorized")
-        var auth = new Buffer(req.headers.authorization.split(' ')[1], 'base64');
+        //var auth = new Buffer(req.headers.authorization.split(' ')[1], 'base64');
 
         //proxyReq.removeHeader("authorization")
         //proxy.web(req, res);
@@ -115,14 +115,9 @@ var middleware = {
       }else{
         console.log("UnAuthorized")
         //next();
-        //res.statusCode = 401; // Force them to retry authentication
-        res.setHeader('WWW-Authenticate', 'Basic realm="Secure Area"');
-        res.statusCode = 403;   // or alternatively just reject them altogether with a 403 Forbidden
-
-        //res.setHeader("Content-Type", "text/html");
-        //res.write("<p>Hello World</p>");
+        res.setHeader("Content-Type", "text/html");
+        res.write("<p>Hello World</p>");
         res.end();
-
       }
 
   },
