@@ -54,7 +54,9 @@ if( 'undefined' != typeof saved_session_id && saved_session_id!= ""){
 // set the window inner size to 800 x 600
 
 browser.get('http://www.google.com');
-
+browser.getSession().then(function(results){
+  console.log(results.id_)
+})
 
 
 // proxy middleware options
