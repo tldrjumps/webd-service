@@ -72,8 +72,9 @@ var options = {
             //'dev.localhost:3000' : 'http://localhost:8000'
         },
         onProxyReq:  function(proxyReq, req, res) {
-          console.log(req.headers.authorization)
+          console.log("Autorization" + req.headers.authorization)
           if(req.headers.authorization != undefined){
+            console.log("Authorized")
             var auth = new Buffer(req.headers.authorization.split(' ')[1], 'base64');
 
             //proxyReq.removeHeader("authorization")
@@ -87,13 +88,13 @@ var options = {
             var creds = plain_auth.split(':');      // split on a ':'
             var username = creds[0];
             var password = creds[1];
-
+            next()
           }else{
-
+              console.log("UnAuthorized")
               //res.statusCode = 401; // Force them to retry authentication
               //res.setHeader('WWW-Authenticate', 'Basic realm="Secure Area"');
               //res.statusCode = 403;   // or alternatively just reject them altogether with a 403 Forbidden
-              res.end('<html><body>You shall not pass</body></html>');
+              res.send('<html><body>You shall not pass</body></html>');
           }
 
 
