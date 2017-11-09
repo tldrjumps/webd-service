@@ -73,32 +73,6 @@ var options = {
         },
         onProxyReq:  function(proxyReq, req, res) {
           console.log("Autorization" + req.headers.authorization)
-          if(req.headers.authorization != undefined){
-            console.log("Authorized")
-            var auth = new Buffer(req.headers.authorization.split(' ')[1], 'base64');
-
-            //proxyReq.removeHeader("authorization")
-            //proxy.web(req, res);
-            var tmp = auth.split(' ');   // Split on a space, the original auth looks like  "Basic Y2hhcmxlczoxMjM0NQ==" and we need the 2nd part
-
-            var buf = new Buffer(tmp[1], 'base64'); // create a buffer and tell it the data coming in is base64
-            var plain_auth = buf.toString();        // read it back out as a string
-            console.log(plain_auth)
-
-            var creds = plain_auth.split(':');      // split on a ':'
-            var username = creds[0];
-            var password = creds[1];
-            next()
-          }else{
-              console.log("UnAuthorized")
-              //res.statusCode = 401; // Force them to retry authentication
-              //res.setHeader('WWW-Authenticate', 'Basic realm="Secure Area"');
-              //res.statusCode = 403;   // or alternatively just reject them altogether with a 403 Forbidden
-              res.setHeader("Content-Type", "text/html");
-              res.write("<p>Hello World</p>");
-              res.end();
-          }
-
 
         }
     };
@@ -112,6 +86,58 @@ var app = express();
       console.log("reach")
       res.send("reach")
     })
-    app.use('/', exampleProxy);
+    app.use('/', [middleware.requireAuthentication,middleware.logger], exampleProxy);
 
     app.listen(LISTEN_PORT);
+
+
+var middleware = {
+  requireAuthentication: function(req, res, next){
+      console.log('private route list!');
+      console.log("Autorization" + req.headers.authorization)
+      if(req.headers.authorization != undefined){
+        console.log("Authorized")
+        var auth = new Buffer(req.headers.authorization.split(' ')[1], 'base64');
+
+        //proxyReq.removeHeader("authorization")
+        //proxy.web(req, res);
+        var tmp = auth.split(' ');   // Split on a space, the original auth looks like  "Basic Y2hhcmxlczoxMjM0NQ==" and we need the 2nd part
+
+        var buf = new Buffer(tmp[1], 'base64'); // create a buffer and tell it the data coming in is base64
+        var plain_auth = buf.toString();        // read it back out as a string
+        console.log(plain_auth)
+
+        var creds = plain_auth.split(':');      // split on a ':'
+        var username = creds[0];
+        var password = creds[1];
+
+        if(password == "TldrSelenium@1"){
+          next();
+        }else{
+
+          //res.statusCode = 403;   // or alternatively just reject them altogether with a 403 Forbidden
+          //res.setHeader('WWW-Authenticate', 'Basic realm="Secure Area"');
+          res.setHeader("Content-Type", "text/html");
+          res.write("<p>Hello World</p>");
+          res.end();
+        }
+
+      }else{
+        console.log("UnAuthorized")
+        //next();
+        //res.statusCode = 401; // Force them to retry authentication
+        res.setHeader('WWW-Authenticate', 'Basic realm="Secure Area"');
+        res.statusCode = 403;   // or alternatively just reject them altogether with a 403 Forbidden
+
+        //res.setHeader("Content-Type", "text/html");
+        //res.write("<p>Hello World</p>");
+        res.end();
+
+      }
+
+  },
+  logger: function(req, res, next){
+     console.log('Original request hit : '+req.originalUrl);
+     next();
+  }
+}
