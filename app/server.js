@@ -74,10 +74,28 @@ var options = {
         onProxyReq:  function(proxyReq, req, res) {
           if(req.headers.authorization != undefined){
             var auth = new Buffer(req.headers.authorization.split(' ')[1], 'base64');
-            console.log(auth)
+
             proxyReq.removeHeader("authorization")
             //proxy.web(req, res);
-            }
+            var tmp = auth.split(' ');   // Split on a space, the original auth looks like  "Basic Y2hhcmxlczoxMjM0NQ==" and we need the 2nd part
+
+            var buf = new Buffer(tmp[1], 'base64'); // create a buffer and tell it the data coming in is base64
+            var plain_auth = buf.toString();        // read it back out as a string
+            console.log(plain_auth)
+
+            var creds = plain_auth.split(':');      // split on a ':'
+            var username = creds[0];
+            var password = creds[1];
+
+          }else{
+
+              res.statusCode = 401; // Force them to retry authentication
+              res.setHeader('WWW-Authenticate', 'Basic realm="Secure Area"');
+              // res.statusCode = 403;   // or alternatively just reject them altogether with a 403 Forbidden
+              res.end('<html><body>You shall not pass</body></html>');
+          }
+
+
         }
     };
 
