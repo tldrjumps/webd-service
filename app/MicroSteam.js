@@ -1,171 +1,3 @@
-
-const chromedriver = require('chromedriver');
-
-var http = require('http');
-// include dependencies
-var express = require('express');
-var proxy = require('http-proxy-middleware');
-var bcrypt = require('bcrypt')
-const LOCAL_PORT = 9015;
-const LISTEN_PORT = process.env.PORT;
-
-const args = [
-  '--url-base=wd/hub',
-  `--port=${LOCAL_PORT}`
-];
-chromedriver.start(args);
-
-var webdriver_server = 'http://localhost:' + LOCAL_PORT + '/wd/hub', // chromedriver.exe serves at this port
-chrome = require('selenium-webdriver/chrome'),
-options = new chrome.Options(),
-webdriver = require( 'selenium-webdriver'),
-Http = require( 'selenium-webdriver/http');
-
-options.setChromeBinaryPath(process.env.GOOGLE_CHROME_BIN);
-
-options.addArguments(
-    'headless',
-    // Use --disable-gpu to avoid an error from a missing Mesa library, as per
-    // https://chromium.googlesource.com/chromium/src/+/lkgr/headless/README.md
-    //'disable-gpu',
-    'disable-infobars', 'no-sandbox', 'allow-insecure-localhost',
-    'window-size=1280,720',
-    '--user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36"'
-    //enable multiple file download args?
-    //chrome profile path for remember password.
-    //drive existing profile?
-);
-
-var app = express();
-
-global.chromeSession;
-var browser = new webdriver.Builder()
-  .withCapabilities(webdriver.Capabilities.chrome())
-  .setChromeOptions(options)
-  .usingServer(webdriver_server)
-  .build()
-
-/*
-if( 'undefined' != typeof saved_session_id && saved_session_id!= ""){
-  console.log("Going to attach to existing session  of id: " + saved_session_id);
-  client = new Http.HttpClient( webdriver_server );
-  executor = new Http.Executor( client);
-  browser = webdriver.WebDriver.attachToSession( executor, saved_session_id);
-}
-*/
-// set the window inner size to 800 x 600
-
-browser.get('http://www.google.com');
-browser.getSession().then(function(results){
-    //Session
-    console.log("chrome session"  + results.id_)
-    global.chromeSession = results.id_
-
-    db2().then( (db) => {
-        console.log(global.chromeSession +  process.env.STEAM_USER1 + "chrome session"  + results.id_)
-        saveObjectToCollection(db, 'websession', {_id: process.env.STEAM_USER1, session: results.id_}, function(err){
-
-        })
-
-    })
-
-    //Start Steam App here?
-    // create the proxy (without context)
-    var exampleProxy = proxy(options);
-    app.use('/wd', [middleware.requireAuthentication,middleware.logger], exampleProxy);
-
-})
-
-
-// proxy middleware options
-var options = {
-        target: 'http://localhost:' + LOCAL_PORT, // target host
-        changeOrigin: true,               // needed for virtual hosted sites
-        ws: true,                         // proxy websockets
-        pathRewrite: {
-            //'^/api/old-path' : '/api/new-path',     // rewrite path
-            //'^/api/remove/path' : '/path'           // remove base path
-        },
-        router: {
-            // when request.headers.host == 'dev.localhost:3000',
-            // override target 'http://www.example.org' to 'http://localhost:8000'
-            //'dev.localhost:3000' : 'http://localhost:8000'
-        },
-        onProxyReq:  function(proxyReq, req, res) {
-          //console.log("Autorization" + req.headers.authorization)
-        },
-        logLevel: 'silent'
-    };
-
-
-
-var middleware = {
-  requireAuthentication: function(req, res, next){
-
-      if(req.headers.authorization != undefined){
-        //console.log("Authorized")
-        //var auth = new Buffer(req.headers.authorization.split(' ')[1], 'base64');
-        var auth = req.headers['authorization'];
-        //proxyReq.removeHeader("authorization")
-        //proxy.web(req, res);
-        var tmp = auth.split(' ');   // Split on a space, the original auth looks like  "Basic Y2hhcmxlczoxMjM0NQ==" and we need the 2nd part
-
-        var buf = new Buffer(tmp[1], 'base64'); // create a buffer and tell it the data coming in is base64
-        var plain_auth = buf.toString();        // read it back out as a string
-
-        var creds = plain_auth.split(':');      // split on a ':'
-        var username = creds[0];
-        var password = creds[1];
-
-        db2().then( (db) => {
-            authDB(db, username, password, function(err, document){
-
-                if(err){
-                    res.setHeader("Content-Type", "text/html");
-                    res.write("<p>In Pending</p>");
-                    res.end();
-                }
-
-                if(document == true){
-                    next();
-                }else{
-                    //res.statusCode = 403;   // or alternatively just reject them altogether with a 403 Forbidden
-                    //res.setHeader('WWW-Authenticate', 'Basic realm="Secure Area"');
-                    res.setHeader("Content-Type", "text/html");
-                    res.write("<p>Hello World</p>");
-                    res.end();
-                }
-
-            })
-        })
-
-
-
-      }else{
-        //console.log("UnAuthorized")
-        //next();
-        res.setHeader("Content-Type", "text/html");
-        res.write("<p>Hello World</p>");
-        res.end();
-      }
-
-  },
-  logger: function(req, res, next){
-     console.log('Original request hit : '+req.originalUrl);
-     next();
-  }
-}
-
-
-
-//Add Route in timeout / dynamic?
-app.get('/ping', function (req, res) {
-
-    res.send("reach")
-})
-
-app.listen(LISTEN_PORT, function () { console.log('REST API initialized on ' + LISTEN_PORT ) })
-
 global._mckay_statistics_opt_out = true;
 
 
@@ -194,13 +26,15 @@ try {
 
 var EPurchaseResultDetail = require('./module/EPurchaseResultDetail');
 
+var express = require('express');
+var app = express()
+,router = express.Router()
+
 
 var mongodb = require('mongodb')
 var mongoDB = db().then( (db) => {
     console.log('initialize')
 })
-
-
 
 async function db() {
   if(mongoDB) return mongoDB;
@@ -211,6 +45,7 @@ async function db() {
   var mongoDB = await mongodb.MongoClient.connect(url);
   return mongoDB
 }
+
 async function db2() {
   if(mongoDB) return mongoDB;
 
@@ -224,7 +59,7 @@ async function db2() {
 
 /* Set up logging */
 var winston = require('winston');
-var logger = require('./module/MODULE_LOGGER.js');   // to force the initialization code (above) to run once
+//var logger = require('./module/MODULE_LOGGER.js');   // to force the initialization code (above) to run once
 
 var args1 = process.argv[2];
 console.log("args: " + args1)
@@ -491,12 +326,18 @@ Object.keys(bots).forEach(function(botid) {
             bots[botid].active = true;
 
             if(args1 != undefined){
-                FREELICENSE.botAddFreeLicense(bots,botid,args1,function(err, grantedPackages, grantedAppIDs){
-                    console.log("" + err)
-                    console.log(grantedPackages)
-                    console.log(grantedAppIDs)
-                })
+
+                console.log(bots[botid].community.getSessionID())
+                console.log(cookies)
+                if(!isNaN(game_id)){
+                    var gameid = parseInt(game_id)
+                    addFreeLicense(bots,botid,gameid,function(err, body){
+                        //console.log(body)
+                    })
+                }
+
             }
+
             restModule(bots, botid)
 
             winston.info("Running Task at Start")
@@ -700,7 +541,17 @@ var processedJSON = function(response, bots, botid, callback){
 
 function restModule(bots, botid){
 
-    app.get('/:username/getOwnedGames', function (req, res) {
+    router.get('/test/:username', function (req, res, next) {
+        var username = req.params.username;
+        Object.keys(bots).forEach(function(botid) {
+            if(bots[botid].username.toLowerCase() == username.toLowerCase()){
+                winston.info( bots[botid].bot.myGroups)
+            }
+        })
+    })
+
+
+    router.get('/:username/getOwnedGames', function (req, res) {
         var username = req.params.username;
 
         var processedJSON = function(response, fn, args){
@@ -723,7 +574,7 @@ function restModule(bots, botid){
         })
     })
 
-    app.get('/ownedApps', function (req, res) {
+    router.get('/ownedApps', function (req, res) {
 
         var z = STEAMAPP.getOwnedAppsProductInfo(bots, botid, STEAMAPP.getOwnedApps(bots, botid),
         function(apps, packages, unknownApps, unknownPackages){
@@ -732,7 +583,7 @@ function restModule(bots, botid){
         })
     })
 
-    app.get('/redeem/:username/:key', function (req, res, next) {
+    router.get('/redeem/:username/:key', function (req, res, next) {
         var username = req.params.username;
         var key = req.params.key;
         function httpMsg(err, details, apps){
@@ -755,7 +606,7 @@ function restModule(bots, botid){
 
     })
 
-    app.get('/test/:username', function (req, res, next) {
+    router.get('/test/:username', function (req, res, next) {
         var username = req.params.username;
         Object.keys(bots).forEach(function(botid) {
             if(bots[botid].username.toLowerCase() == username.toLowerCase()){
@@ -765,7 +616,7 @@ function restModule(bots, botid){
     })
 
 
-    app.get('/:username/group/sync', function (req, res, next) {
+    router.get('/:username/group/sync', function (req, res, next) {
             //STEAMGROUP.toJoinGroup(bots, botid, "groupbuys");
             //Always sync the groups
         function respond(err, count){
@@ -788,7 +639,100 @@ function restModule(bots, botid){
         })
     })
 
+
+
+    router.get('/play/:username/:game_id', function (req, res, next) {
+        //STEAMGROUP.toJoinGroup(bots, botid, "groupbuys");
+        //Always sync the groups
+        function respond(err, count){
+            //err = statusCode 9
+            if(err){
+                res.send(count)
+            }else{
+                res.send("Game played: " + count)
+            }
+        }
+
+        var username = req.params.username;
+        var game_id = req.params.game_id;
+
+        var gameids = []
+        gameids.push(game_id)
+
+        Object.keys(bots).forEach(function(botid) {
+            if(bots[botid].username == username){
+                winston.info(bots[botid].username + " found")
+                var z = STEAMGAME.idleGame(bots,botid, gameids);
+                respond(null, z)
+            }
+        })
+})
+
+
+router.get('/free/:username/:game_id', function (req, res, next) {
+    //STEAMGROUP.toJoinGroup(bots, botid, "groupbuys");
+    //Always sync the groups
+    function respond(err, count){
+        //err = statusCode 9
+        if(err){
+            res.send(count)
+        }else{
+            res.send("Done")
+            //res.send("Game played: " + count)
+        }
+    }
+
+    var username = req.params.username;
+    var game_id = req.params.game_id;
+
+
+    Object.keys(bots).forEach(function(botid) {
+        if(bots[botid].username == username){
+            winston.info(bots[botid].username + " found")
+
+            addFreeLicense(bots,botid,game_id,function(err, body){
+                respond(err, body)
+            })
+        }
+    })
+})
+
+
+
+
+
+
 }
+
+function addFreeLicense(bots, botid, game_id, callback){
+
+    console.log(bots[botid].community.getSessionID())
+    //console.log(cookies)
+    //console.log(bots[botid].community.request.cookie())
+    //snr=1_5_9__403&action=add_to_cart&sessionid=7c51bb79e44f16ab3086a1e0&subid=22580
+    var uri = "http://store.steampowered.com/checkout/addfreelicense/";
+    var options = {
+
+        "form": {
+            "snr": "1_5_9__403",
+            "action": "add_to_cart",
+            "subid" : parseInt(game_id),
+            "sessionid": bots[botid].community.getSessionID()
+        },
+        "json": true
+    }
+    bots[botid].community.httpRequestPost(uri, options, function(err, response, body) {
+        if (err) {
+            console.log(err)
+            callback(err)
+            return;
+        }
+        callback(null, body)
+        console.log(body)
+    }, "steamcommunity");
+
+}
+
 
 
 function updateMongo(db, key, value){
@@ -829,33 +773,12 @@ function runningPre(db, username, callback){
 }
 
 
-function authDB(db, username, sec, callback){
-    var options = {
-      "limit": 1,
-      "sort": "_id"
-    }
-    winston.info("find guardian for " + username)
-    db.collection('apicheck').findOne({username: username}, function(err, document) {
-        if(err){
-            return callback(err);
-        }
-        bcrypt.compare(sec, document.secret, function (err, result) {
-
-            if (result === true) {
-              return callback(null, result);
-            } else {
-              return callback(err);
-            }
-          })
-    });
-
-
-}
 
 process.on('uncaughtException', function (err) {
   winston.error(err);
 
 });
+
 
 
 
@@ -928,4 +851,20 @@ function getSen(db, key, callback){
           callback(err, fileArr);*/
 
       });
+}
+if (require.main === module) {
+    var port = process.env.port || 3000
+    app.use("/start", router)
+
+    app.listen(port, function() {
+        console.log('Listening on port ' + port)
+    })
+} else {
+    module.exports = {
+       init: function() {
+         //init()
+         console.log("MicroSteam Init")
+       },
+       router : router
+     }
 }

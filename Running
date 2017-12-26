@@ -1,0 +1,42 @@
+
+https://stackoverflow.com/questions/5129598/how-to-link-a-folder-with-an-existing-heroku-app
+heroku git:remote -a herokuprojectname
+
+# replace REPLACE_ME_OS/REPLACE_ME_ARCH with values as noted below
+wget https://cli-assets.heroku.com/heroku-cli/channels/stable/heroku-cli-linux-x64.tar.gz -O heroku.tar.gz
+tar -xvzf heroku.tar.gz
+sudo mkdir -p /usr/local/lib /usr/local/bin
+mv heroku-cli-v6.x.x-darwin-64 /usr/local/lib/heroku
+ln -s /usr/local/lib/heroku/bin/heroku /usr/local/bin/heroku
+--
+wget https://cli-assets.heroku.com/branches/stable/heroku-OS-ARCH.tar.gz
+sudo mkdir -p /usr/local/lib /usr/local/bin
+sudo tar -xvzf heroku.tar.gz -C /usr/local/lib
+sudo ln -s /usr/local/lib/heroku/bin/heroku /usr/local/bin/heroku
+
+
+heroku create webd-service
+heroku config:set NODE_ENV=production --app webd-service
+
+# Stack and Buildpacks
+heroku stack:set heroku-16
+heroku buildpacks:add --index 1 https://github.com/heroku/heroku-buildpack-google-chrome
+heroku buildpacks:add --index 2 https://github.com/heroku/heroku-buildpack-chromedriver
+heroku buildpacks:add --index 3 heroku/nodejs
+git push heroku master
+
+
+heroku config:set MAXIMUM_IDLE=9
+heroku config:set MONGODB=mongodb://journey:TimeLove17@ds157444.mlab.com:57444/activation
+heroku config:set MONGODB_TLS=mongodb://tldrjumpadmin:TldrMongo#1@clusters0-shard-00-00-a9z2w.mongodb.net:27017,clusters0-shard-00-01-a9z2w.mongodb.net:27017,clusters0-shard-00-02-a9z2w.mongodb.net:27017/newjob?ssl=true&replicaSet=Clusters0-shard-0&authSource=admin
+heroku config:set STEAM_ADMIN=76561198113607607,76561198113607607
+heroku config:set STEAM_UPSTREAM=76561198130206874
+heroku config:set STEAM_USER1=teamslover
+heroku config:set STEAM_PASSWORD1=Teams777.
+heroku config:set STEAM_USER_ENABLE1=1
+heroku config:set STEAM_USER2=steamylovers
+heroku config:set STEAM_PASSWORD2=Lovers777.
+heroku config:set STEAM_USER_ENABLE2=1
+
+git config credential.helper 'cache --timeout 3600'
+test

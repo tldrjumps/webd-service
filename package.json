@@ -1,7 +1,7 @@
 {
   "name": "scraping-service",
   "version": "1.0.0",
-  "description": "Service is a REST API for Web Task,
+  "description": "Service is a REST API for Web Task",
   "author": "JW",
   "license": "MIT",
   "main": "app/server.js",
@@ -10,33 +10,34 @@
     "start": "node app/server.js",
     "test": "node test/app.js"
   },
+  "engines": {
+    "node": "8.6.x"
+  },
   "dependencies": {
+    "axios": "^0.16.2",
+    "bcrypt": "^1.0.3",
     "body-parser": "^1.17.1",
-
+    "cheerio": "^0.22.0",
     "chrome-remote-interface": "^0.24.3",
     "chromedriver": "^2.33.2",
     "compression": "^1.6.2",
+    "concat-stream": "^1.6.0",
     "cors": "^2.8.4",
-    "express": "^4.15.2",
+    "dotenv": "^4.0.0",
+    "env-var": "^3.0.2",
+    "express": "^4.16.2",
     "express-jwt": "^5.3.0",
     "glob": "^7.1.1",
     "http-proxy": "^1.16.2",
     "http-proxy-middleware": "^0.17.4",
     "lodash": "^4.17.4",
-    "selenium-webdriver": "^3.6.0",
-
-    "axios": "^0.16.2",
-    "cheerio": "^0.22.0",
-    "concat-stream": "^1.6.0",
-    "dotenv": "^4.0.0",
-    "env-var": "^3.0.2",
-    "express": "^4.16.2",
     "mongodb": "^2.2.33",
     "pouchdb": "^6.3.4",
     "pouchdb-adapter-node-websql": "^6.3.4",
     "pouchdb-find": "^6.3.4",
     "pouchdb-upsert": "^2.2.0",
     "request": "^2.83.0",
+    "selenium-webdriver": "^3.6.0",
     "steam-totp": "^1.4.1",
     "steam-tradeoffer-manager": "^2.9.0",
     "steam-user": "^3.23.2",
@@ -44,7 +45,6 @@
     "steamid": "^1.1.0",
     "winston": "^2.4.0",
     "xml2js": "^0.4.11"
-
   },
   "devDependencies": {}
 }

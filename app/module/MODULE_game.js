@@ -6,7 +6,11 @@ var Cheerio = require('cheerio');
 
 var settings = require('../config/activateSettings.js');
 
-var game = function(){};
+var savedThis;
+
+var game = function(){
+    savedThis = this;
+};
 
 game.prototype.log = function(){
     console.log("")
@@ -40,7 +44,7 @@ game.prototype.updateGames = function (bots, botid, callback) {
                 winston.verbose('[' + bots[botid].name + '] Game changed!');
                 //console.log(Object.keys(apps))
 
-                idleGame(bots, botid, Object.keys(apps));
+                savedThis.idleGame(bots, botid, Object.keys(apps));
             } else {
                 winston.verbose('[' + bots[botid].name + '] Game not changed!');
             }
@@ -60,7 +64,7 @@ game.prototype.updateGames = function (bots, botid, callback) {
 }
 
 
-function idleGame(bots, botid, gameid) {
+game.prototype.idleGame = function (bots, botid, gameid) {
 
     /* Check if bot is excluded from idling */
     if (bots[botid].idle) {
@@ -106,6 +110,8 @@ function idleGame(bots, botid, gameid) {
         //bots[botid].bot.gamesPlayed(gameids);
         bots[botid].idling = gameids[0];
         winston.info('[' + bots[botid].name + '] Started idling: ' + JSON.stringify(gameids));
+
+        return gameids;
     }
 }
 
