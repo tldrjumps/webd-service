@@ -21,6 +21,7 @@ options = new chrome.Options(),
 webdriver = require( 'selenium-webdriver'),
 Http = require( 'selenium-webdriver/http');
 
+console.log(process.env.GOOGLE_CHROME_BIN)
 options.setChromeBinaryPath(process.env.GOOGLE_CHROME_BIN);
 
 options.addArguments(
@@ -84,9 +85,8 @@ var options = {
 var middleware = {
   requireAuthentication: function(req, res, next){
       console.log('private route list!');
-      console.log("Autorization" + req.headers.authorization)
       if(req.headers.authorization != undefined){
-        console.log("Authorized")
+        //console.log("Authorized")
         //var auth = new Buffer(req.headers.authorization.split(' ')[1], 'base64');
         var auth = req.headers['authorization'];
         //proxyReq.removeHeader("authorization")
@@ -95,13 +95,13 @@ var middleware = {
 
         var buf = new Buffer(tmp[1], 'base64'); // create a buffer and tell it the data coming in is base64
         var plain_auth = buf.toString();        // read it back out as a string
-        console.log(plain_auth)
+
 
         var creds = plain_auth.split(':');      // split on a ':'
         var username = creds[0];
         var password = creds[1];
 
-        if(password == "TldrSelenium@1"){
+        if(password == "Testing1"){
           next();
         }else{
 
@@ -113,7 +113,7 @@ var middleware = {
         }
 
       }else{
-        console.log("UnAuthorized")
+        //console.log("UnAuthorized")
         //next();
         res.setHeader("Content-Type", "text/html");
         res.write("<p>Hello World</p>");
@@ -136,6 +136,9 @@ var exampleProxy = proxy(options);
 
 // mount `exampleProxy` in web server
 var app = express();
+
+
+
     app.get('/ownedApps', function (req, res) {
       console.log("reach")
       res.send("reach")
